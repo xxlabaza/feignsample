@@ -1,0 +1,73 @@
+
+management:
+  context-path: '/admin'
+
+server:
+  port: 8081
+
+spring:
+  application:
+    name: feignsample
+  profiles:
+    include: amqp
+  cloud:
+    config:
+      uri: http://localhost:9876
+      username: evouser
+      password: evopass
+      failFast: true
+  oauth2:
+    resource:
+      userInfoUri: http://localhost:9988/api/authentication/user
+
+eureka:
+  instance:
+    hostname:                       ${application.domain:localhost}:${server.port}
+    virtualHostName:                ${spring.application.name}
+    preferIpAddress:                true
+    statusPageUrlPath:              ${management.context-path}/info
+    healthCheckUrlPath:             ${management.context-path}/health
+    leaseRenewalIntervalInSeconds:  60 # heartbeat интервал
+    metadataMap:
+      password:   ${security.user.password}
+      instanceId: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+  client:
+    region:                       'RUSSIA'
+    preferSameZone:               true
+    fetchRegistry:                true
+    registerWithEureka:           true
+    registryFetchIntervalSeconds: 5
+    serviceUrl:
+      defaultZone: 'http://localhost:8761/eureka/'
+
+endpoints:
+  restart:
+    enabled: true
+  shutdown:
+    enabled: true
+  health:
+    rabbit.enabled: true
+    sensitive: false
+
+hystrix:
+  stream:
+    maxConcurrentConnections: 50
+
+ribbon:
+  ConnectTimeout:             5000
+  ReadTimeout:                5000
+  MaxAutoRetries:             1
+  MaxAutoRetriesNextServer:   1
+  OkToRetryOnAllOperations:   true
+  MaxHttpConnectionsPerHost:  200
+  MaxTotalHttpConnections:    1000
+
+feignsample:
+  ribbon:
+    MaxAutoRetries:                     1
+    MaxAutoRetriesNextServer:           1
+    OkToRetryOnAllOperations:           true
+    EnableZoneAffinity:                 true
+    NIWSServerListClassName:            com.netflix.niws.loadbalancer.DiscoveryEnabledNIWSServerList
+    ServerListRefreshInterval:          30000
+    DeploymentContextBasedVipAddresses: clientsample
